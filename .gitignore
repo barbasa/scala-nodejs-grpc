@@ -123,3 +123,6 @@ typings/
 
 ### Scala ###
 *.class
+
+webclient/lib/
+api/target/
