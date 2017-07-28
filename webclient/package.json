@@ -1,0 +1,10 @@
+{
+  "name": "grp-node-client",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "google-protobuf": "^3.2.0",
+    "grpc": "^1.2.0",
+    "request": "^2.81.0"
+  }
+}
