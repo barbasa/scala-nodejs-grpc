@@ -10,12 +10,13 @@ console.log(`Connecting to API ${API_URL}:${API_PORT}`);
 let client = new services.SearchRestaurantServiceClient(`${API_URL}:${API_PORT}`, grpc.credentials.createInsecure());
 
 let protoRequest = new messages.SearchRestaurantRequest();
+// protoRequest.setPostcode("w120je")
 
-protoRequest.setPostcode("w120je")
-
-client.searchRestaurant(protoRequest, function(response){
-    console.log(response)
-    // response.getRestaurantsList().map(function (r) {
-    //     console.log(r.toObject())
-    // });
+client.searchRestaurant(protoRequest, function(err,response){
+    if (err) {
+        console.error(err)
+    }
+    response.getRestaurantsList().map(function (r) {
+        console.log(r.toObject())
+    });
 })

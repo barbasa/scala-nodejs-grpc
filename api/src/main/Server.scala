@@ -6,43 +6,30 @@ import io.grpc.{Server, ServerBuilder}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 object RestaurantServer {
   private val logger = Logger.getLogger(classOf[RestaurantServer].getName)
 
   def main(args: Array[String]): Unit = {
     val server = new RestaurantServer(ExecutionContext.global)
-    server.start()
-    server.blockUntilShutdown()
+    server.blockUntilShutdown
   }
 
   private val port = 50051
 }
 
+class RestaurantServer(executionContext: ExecutionContext) {
 
-class RestaurantServer(executionContext: ExecutionContext) { self =>
-  private[this] var server: Server = null
+  private val server: Server = ServerBuilder.forPort(RestaurantServer.port).addService(SearchRestaurantServiceGrpc.bindService(new RestaurantServerImpl, executionContext)).build.start
+  RestaurantServer.logger.info("Server started, listening on " + RestaurantServer.port)
 
-  private def start(): Unit = {
-    server = ServerBuilder.forPort(RestaurantServer.port).addService(SearchRestaurantServiceGrpc.bindService(new RestaurantServerImpl, executionContext)).build.start
-    RestaurantServer.logger.info("Server started, listening on " + RestaurantServer.port)
-    sys.addShutdownHook {
+  sys.addShutdownHook {
       System.err.println("*** shutting down gRPC server since JVM is shutting down")
-      self.stop()
-      System.err.println("*** server shut down")
-    }
-  }
-
-  private def stop(): Unit = {
-    if (server != null) {
       server.shutdown()
-    }
+      System.err.println("*** server shut down")
   }
 
-  private def blockUntilShutdown(): Unit = {
-    if (server != null) {
+  private def blockUntilShutdown {
       server.awaitTermination()
-    }
   }
 
   private class RestaurantServerImpl extends SearchRestaurantServiceGrpc.SearchRestaurantService {
@@ -67,7 +54,9 @@ class RestaurantServer(executionContext: ExecutionContext) { self =>
       Some(GeoPoint(51.3, 0.23))
     )
 
-    override def searchRestaurant(request: SearchRestaurantRequest): Future[SearchRestaurantResponse] = Future.successful(SearchRestaurantResponse(restaurants = Seq(restaurant1, restaurant2), info = Some(SearchRestaurantResponseInfo(totalHits = 2, timeTaken = 3L))))
+    override def searchRestaurant(request: SearchRestaurantRequest): Future[SearchRestaurantResponse] = Future.successful{
+      SearchRestaurantResponse(restaurants = Seq(restaurant1, restaurant2), info = Some(SearchRestaurantResponseInfo(totalHits = 2, timeTaken = 3L)))
+    }
 
     override def lookupRestaurant(request: LookupRestaurantRequest): Future[LookupRestaurantResponse] = ???
   }
